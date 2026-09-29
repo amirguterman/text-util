@@ -11,8 +11,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
-      - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
@@ -21,6 +19,10 @@ jobs:
           mkdir -p /tmp/text-util-tests
           javac -d /tmp/text-util-tests app/src/main/java/com/amirguterman/textutil/SearchEngine.java app/src/test/java/com/amirguterman/textutil/SearchEngineSmokeTest.java
           java -cp /tmp/text-util-tests com.amirguterman.textutil.SearchEngineSmokeTest
+      - name: Install Android SDK platform
+        run: |
+          SDKMANAGER_BIN=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
+          "$SDKMANAGER_BIN" 'platforms;android-36' 'build-tools;35.0.0'
       - run: gradle :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
