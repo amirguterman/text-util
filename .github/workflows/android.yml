@@ -1,0 +1,30 @@
+name: Android
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Search engine smoke tests
+        run: |
+          mkdir -p /tmp/text-util-tests
+          javac -d /tmp/text-util-tests app/src/main/java/com/amirguterman/textutil/SearchEngine.java app/src/test/java/com/amirguterman/textutil/SearchEngineSmokeTest.java
+          java -cp /tmp/text-util-tests com.amirguterman.textutil.SearchEngineSmokeTest
+      - name: Install Android SDK platform
+        run: |
+          SDKMANAGER_BIN=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
+          "$SDKMANAGER_BIN" 'platforms;android-36' 'build-tools;35.0.0'
+      - run: gradle :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: text-util-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
